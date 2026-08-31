@@ -1,0 +1,7 @@
+[2026-08-31 13:21:30,035] INFO [iris_api] App starting: Loading Iris model into memory...
+[2026-08-31 13:21:32,663] INFO [iris_api] SUCCESS: Iris model loaded successfully into memory!
+[2026-08-31 13:25:12,334] INFO [iris_api] [18618e69-2aab-4449-b5b1-5bdd978e67a9] Method=GET Path=/docs Status=200 Duration=1.17ms
+[2026-08-31 13:25:12,610] INFO [iris_api] [643270b3-1011-4cc4-abb9-555ec8315500] Method=GET Path=/openapi.json Status=200 Duration=20.61ms
+[2026-08-31 13:26:23,975] INFO [iris_api] [2fcb7b0c-b2f0-425b-9f0d-0fce2169cf0b] Method=POST Path=/predict Status=422 Duration=3.28ms
+[2026-08-31 13:29:40,486] INFO [iris_api] [b8198853-10ea-4203-8a55-b1339b39ab81] Prediction Successful: Result=2, Confidence=0.9600
+[2026-08-31 13:29:40,490] INFO [iris_api] [b8198853-10ea-4203-8a55-b1339b39ab81] Method=POST Path=/predict Status=200 Duration=47.22ms
