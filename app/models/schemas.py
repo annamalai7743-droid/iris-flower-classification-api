@@ -1,16 +1,39 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import List, Dict, Optional
 
-# Input Validation Schema
 class IrisInput(BaseModel):
-    sepal_length: float = Field(..., gt=0, lt=10, description="Sepal length in cm")
-    sepal_width: float = Field(..., gt=0, lt=10, description="Sepal width in cm")
-    petal_length: float = Field(..., gt=0, lt=10, description="Petal length in cm")
-    petal_width: float = Field(..., gt=0, lt=10, description="Petal width in cm")
+    sepal_length: float
+    sepal_width: float
+    petal_length: float
+    petal_width: float
 
-# Output Validation Schema (NEW in Task 8)
+class IrisBatchInput(BaseModel):
+    inputs: List[IrisInput]
+
 class PredictionOutput(BaseModel):
+    request_id: Optional[str] = None
+    prediction: int
+    predicted_class_name: Optional[str] = None
+    confidence: float
+    model_version: str
+    status: Optional[str] = None
+
+class IrisBatchOutput(BaseModel):
+    predictions: List[PredictionOutput]
+    batch_size: int
+    status: str
+
+
+class PredictionOutputV2(BaseModel):
     request_id: str
     prediction: int
-    confidence: float
-    model_version: str = "v1.0"
-    status: str = "success"
+    predicted_class_name: str
+    class_probabilities: Dict[str, float]
+    model_version: str
+    status: str
+
+class ModelInfoOutput(BaseModel):
+    model_version: str
+    model_type: str
+    features: List[str]
+    target_classes: List[str]
