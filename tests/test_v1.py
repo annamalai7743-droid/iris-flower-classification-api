@@ -1,5 +1,7 @@
 from app.config import settings
 
+HEADERS = {"X-API-Key": settings.API_KEY}
+
 def test_health_check(client):
     response = client.get("/api/v1/health")
     assert response.status_code == 200
@@ -12,7 +14,7 @@ def test_predict_success(client):
         "petal_length": 1.4,
         "petal_width": 0.2
     }
-    response = client.post("/api/v1/predict", json=payload)
+    response = client.post("/api/v1/predict", headers=HEADERS, json=payload)
     assert response.status_code == 200
     data = response.json()
     assert "prediction" in data
@@ -23,7 +25,7 @@ def test_predict_validation_error(client):
     payload = {
         "sepal_length": 5.1
     }
-    response = client.post("/api/v1/predict", json=payload)
+    response = client.post("/api/v1/predict", headers=HEADERS, json=payload)
     assert response.status_code == 422
 
 def test_predict_batch_success(client):
@@ -33,7 +35,7 @@ def test_predict_batch_success(client):
             {"sepal_length": 6.7, "sepal_width": 3.0, "petal_length": 5.2, "petal_width": 2.3}
         ]
     }
-    response = client.post("/api/v1/predict-batch", json=payload)
+    response = client.post("/api/v1/predict-batch", headers=HEADERS, json=payload)
     assert response.status_code == 200
     data = response.json()
     assert data["batch_size"] == 2
@@ -45,16 +47,17 @@ def test_predict_batch_exceeds_limit(client):
     ] * (settings.MAX_BATCH_SIZE + 1)
 
     payload = {"inputs": oversized_batch}
-    response = client.post("/api/v1/predict-batch", json=payload)
+    response = client.post("/api/v1/predict-batch", headers=HEADERS, json=payload)
     assert response.status_code == 400
 
 def test_model_info(client):
-    response = client.get("/api/v1/model-info")
+    response = client.get("/api/v1/model-info", headers=HEADERS)
     assert response.status_code == 200
     data = response.json()
     assert "model_type" in data
     assert "model_version" in data
     assert "features" in data
+
 def test_v1_and_v2_schema_isolation(client):
     payload = {
         "sepal_length": 5.1,
@@ -63,8 +66,8 @@ def test_v1_and_v2_schema_isolation(client):
         "petal_width": 0.2
     }
     
-    res_v1 = client.post("/api/v1/predict", json=payload)
-    res_v2 = client.post("/api/v2/predict", json=payload)
+    res_v1 = client.post("/api/v1/predict", headers=HEADERS, json=payload)
+    res_v2 = client.post("/api/v2/predict", headers=HEADERS, json=payload)
 
     assert res_v1.status_code == 200
     assert res_v2.status_code == 200

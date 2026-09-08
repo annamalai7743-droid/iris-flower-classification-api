@@ -1,6 +1,8 @@
 import joblib
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, status, Security
+from fastapi.security.api_key import APIKeyHeader
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.logging_config import logger
@@ -21,13 +23,43 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Iris Classification API",
+    title=settings.API_TITLE,
     version=settings.API_VERSION,
     lifespan=lifespan,
 )
 
-app.include_router(v1.router, prefix="/api")
-app.include_router(v2.router, prefix="/api")
+# 1. Add CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 2. Setup API Key Security Dependency
+API_KEY_NAME = "X-API-Key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    if api_key == settings.API_KEY:
+        return api_key
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or missing API Key",
+    )
+
+# 3. Include Routers with API Key Protection Dependency
+app.include_router(
+    v1.router,
+    prefix="/api",
+    dependencies=[Depends(verify_api_key)]
+)
+app.include_router(
+    v2.router,
+    prefix="/api",
+    dependencies=[Depends(verify_api_key)]
+)
 
 
 @app.get("/")

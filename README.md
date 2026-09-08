@@ -248,3 +248,9 @@ Conclusion
 The Iris Flower Classification API will provide a simple machine learning-based API for predicting Iris flower species from four physical measurements.
 
 Task 1 establishes the project requirements, API contract, architecture, dataset, and machine learning approach before moving to the actual implementation in Task 2.
+
+## How to Run with Docker Compose
+
+1. Start the application:
+   ```bash
+   docker compose up --build
