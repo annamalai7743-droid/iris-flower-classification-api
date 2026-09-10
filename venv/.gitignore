@@ -6,3 +6,5 @@ __pycache__/
 # Adding wildcard paths for subdirectories:
 **/__pycache__/
 *.py[cod]
+*.html
+*.pngs
