@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status, Security
 from fastapi.security.api_key import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.config import settings
 from app.logging_config import logger
@@ -28,7 +29,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# 1. Add CORS Middleware
+# Instrument Prometheus metrics
+Instrumentator().instrument(app).expose(app)
+
+# Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
@@ -37,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 2. Setup API Key Security Dependency
+# Setup API Key Security Dependency
 API_KEY_NAME = "X-API-Key"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
@@ -49,7 +53,7 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
         detail="Invalid or missing API Key",
     )
 
-# 3. Include Routers with API Key Protection Dependency
+# Include Routers
 app.include_router(
     v1.router,
     prefix="/api",

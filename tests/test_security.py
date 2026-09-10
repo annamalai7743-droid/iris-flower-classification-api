@@ -46,4 +46,4 @@ def test_extra_field_forbidden():
             "unexpected_field": "hacker_payload"
         }
     )
-    assert response.status_code == 422
+    assert response.status_code == 422    
