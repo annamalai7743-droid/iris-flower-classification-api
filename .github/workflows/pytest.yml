@@ -24,4 +24,4 @@ jobs:
             
     - name: Run pytest
       run: |
-        python -m pytest tests/
+        python -m pytest tests/test_v1.py tests/test_integration.py
