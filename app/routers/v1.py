@@ -25,8 +25,9 @@ def health_check():
         "model_loaded": model is not None
     }
 
+# 1. request: Request parameter pass pannirukom
 @router.post("/predict", response_model=PredictionOutput)
-def predict(data: IrisInput):
+def predict(data: IrisInput, request: Request):
     input_data = np.array([[
         data.sepal_length,
         data.sepal_width,
@@ -38,13 +39,20 @@ def predict(data: IrisInput):
     probabilities = model.predict_proba(input_data)
     confidence = np.max(probabilities)
     
+    pred_class_idx = int(prediction[0])
+    predicted_class_name = TARGET_CLASSES[pred_class_idx]
+    
+    # Custom Metric Incrementing
+    if hasattr(request.app.state, "prediction_counter") and request.app.state.prediction_counter:
+        request.app.state.prediction_counter.labels(predicted_class=predicted_class_name).inc()
+
     return {
-    "prediction": int(prediction[0]),
-    "predicted_class_name": TARGET_CLASSES[prediction[0]],
-    "confidence": float(confidence),
-    "model_version": settings.API_VERSION,
-    "status": "success"
-}
+        "prediction": pred_class_idx,
+        "predicted_class_name": predicted_class_name,
+        "confidence": float(confidence),
+        "model_version": settings.API_VERSION,
+        "status": "success"
+    }
 
 @router.post("/predict-batch", response_model=IrisBatchOutput)
 def predict_batch(request: Request, batch_data: IrisBatchInput):
@@ -68,11 +76,17 @@ def predict_batch(request: Request, batch_data: IrisBatchInput):
     results = []
     for idx, input_item in enumerate(batch_data.inputs):
         pred_class = int(predictions[idx])
+        predicted_class_name = TARGET_CLASSES[pred_class]
         conf = float(np.max(probabilities[idx]))
+        
+        # Batch predictions-kum counter-ah loop ulla update panrom
+        if hasattr(request.app.state, "prediction_counter") and request.app.state.prediction_counter:
+            request.app.state.prediction_counter.labels(predicted_class=predicted_class_name).inc()
+
         results.append({
             "request_id": request_id,
             "prediction": pred_class,
-            "predicted_class_name": TARGET_CLASSES[pred_class],
+            "predicted_class_name": predicted_class_name,
             "confidence": round(conf, 4),
             "model_version": settings.API_VERSION,
             "status": "success"
